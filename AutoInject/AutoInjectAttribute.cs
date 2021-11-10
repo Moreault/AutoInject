@@ -1,13 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿namespace ToolBX.AutoInject;
 
-namespace ToolBX.AutoInject
+[AttributeUsage(AttributeTargets.Class)]
+public class AutoInjectAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Class)]
-    public class AutoInjectAttribute : Attribute
-    {
-        public ServiceLifetime Lifetime { get; init; }
+    public ServiceLifetime Lifetime { get; init; }
 
-        public Type Interface { get; init; }
-    }
+    public Type? Interface { get; init; }
 }

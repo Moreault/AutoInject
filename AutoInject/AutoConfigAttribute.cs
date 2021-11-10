@@ -1,15 +1,12 @@
-﻿using System;
+﻿namespace ToolBX.AutoInject;
 
-namespace ToolBX.AutoInject
+[AttributeUsage(AttributeTargets.Class)]
+public class AutoConfigAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Class)]
-    public class AutoConfigAttribute : Attribute
-    {
-        public string Name { get; }
+    public string Name { get; }
 
-        public AutoConfigAttribute(string name)
-        {
-            Name = name;
-        }
+    public AutoConfigAttribute(string name)
+    {
+        Name = name;
     }
 }
