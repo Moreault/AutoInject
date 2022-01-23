@@ -1,4 +1,6 @@
-﻿namespace ToolBX.AutoInject;
+﻿using ToolBX.AutoInject.Resources;
+
+namespace ToolBX.AutoInject;
 
 public static class ServiceCollectionExtensions
 {
@@ -10,7 +12,7 @@ public static class ServiceCollectionExtensions
         foreach (var type in types)
         {
             var interfaces = type.GetInterfaces();
-            if (!interfaces.Any()) throw new Exception($"Can't inject service automatically : {type.Name} is expected to implement at least one interface.");
+            if (!interfaces.Any()) throw new InvalidOperationException(string.Format(Exceptions.CannotInjectServiceBecauseNoInterface, type.Name));
 
             var attribute = (AutoInjectAttribute)Attribute.GetCustomAttribute(type, typeof(AutoInjectAttribute), true);
 
@@ -43,12 +45,12 @@ public static class ServiceCollectionExtensions
                             IsInherited = !directInterfaces.Contains(i)
                         });
                 }
-
-                if (!searchResult.Any()) throw new Exception($"Can't inject service automatically : {type.Name} implements {interfaces.Length} interfaces but none of them are close to similar in name.");
+                
+                if (!searchResult.Any()) throw new Exception(string.Format(Exceptions.CannotInjectServiceBecauseNoSimilarInterface, type.Name, interfaces.Length));
 
                 searchResult = searchResult.OrderBy(x => x.IsInherited).ThenByDescending(x => x.Similarities).ToList();
                 if (searchResult.Count > 1 && searchResult[0].Similarities == searchResult[1].Similarities && searchResult[0].IsInherited == searchResult[1].IsInherited)
-                    throw new Exception($"Can't inject service automatically : {type.Name} there is ambiguity between {searchResult[0].Interface.Name} and {searchResult[1].Interface.Name}. Either change interface names or specify the interface to use.");
+                    throw new Exception(string.Format(Exceptions.CannotInjectServiceBecauseOfAmbiguousNames, searchResult[0].Interface.Name, searchResult[1].Interface.Name, type.Name));
 
                 implementation = searchResult.First().Interface;
             }
@@ -68,7 +70,7 @@ public static class ServiceCollectionExtensions
                     serviceCollection.AddTransient(implementation, type);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new NotSupportedException(string.Format(Exceptions.CannotInjectServiceBecauseLifetimeNotSupported, attribute.Lifetime));
             }
 
 
@@ -101,6 +103,6 @@ public static class ServiceCollectionExtensions
             .Select(x => x.GetInterfaces().SingleOrDefault(y => y.Name != typeof(T).Name && serviceProvider.GetService(y) is T))
             .Where(x => x != null);
 
-        return types.Select(x => (T)serviceProvider.GetService(x) ?? throw new Exception($"Can't find service '{x.Name}' implementing '{typeof(T).Name}'")).ToList();
+        return types.Select(x => (T)serviceProvider.GetService(x) ?? throw new AutoInjectServiceNotFoundException(x, typeof(T))).ToList();
     }
 }
