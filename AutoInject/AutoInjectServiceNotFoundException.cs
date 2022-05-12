@@ -1,6 +1,4 @@
-﻿using ToolBX.AutoInject.Resources;
-
-namespace ToolBX.AutoInject;
+﻿namespace ToolBX.AutoInject;
 
 public class AutoInjectServiceNotFoundException : Exception
 {

@@ -1,0 +1,1 @@
+﻿ConsoleHost.UseStartup<Startup>();

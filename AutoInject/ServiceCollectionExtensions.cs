@@ -1,13 +1,10 @@
-﻿using ToolBX.AutoInject.Resources;
-
-namespace ToolBX.AutoInject;
+﻿namespace ToolBX.AutoInject;
 
 public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddAutoInjectServices(this IServiceCollection serviceCollection)
     {
-        AssemblyLoader.LoadAll();
-        var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes()).Where(y => y.GetCustomAttributes(typeof(AutoInjectAttribute), true).Any()).ToList();
+        var types = TypeFetcher.Query().HasAttribute(typeof(AutoInjectAttribute)).ToList();
 
         foreach (var type in types)
         {
@@ -45,7 +42,7 @@ public static class ServiceCollectionExtensions
                             IsInherited = !directInterfaces.Contains(i)
                         });
                 }
-                
+
                 if (!searchResult.Any()) throw new Exception(string.Format(Exceptions.CannotInjectServiceBecauseNoSimilarInterface, type.Name, interfaces.Length));
 
                 searchResult = searchResult.OrderBy(x => x.IsInherited).ThenByDescending(x => x.Similarities).ToList();
@@ -80,8 +77,7 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddAutoConfig(this IServiceCollection services, IConfiguration configuration)
     {
-        AssemblyLoader.LoadAll();
-        var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes()).Where(y => !y.IsInterface && !y.IsAbstract && !y.IsGenericTypeDefinition && !y.IsGenericType && y.GetCustomAttributes(typeof(AutoConfigAttribute), true).Any()).ToList();
+        var types = TypeFetcher.Query().IsNotInterface().IsNotAbstract().IsNotGenericTypeDefinition().IsNotGeneric().HasAttribute(typeof(AutoConfigAttribute)).ToList();
 
         foreach (var type in types)
         {
@@ -97,9 +93,7 @@ public static class ServiceCollectionExtensions
 
     public static IList<T> GetAutoInjectServices<T>(this IServiceProvider serviceProvider)
     {
-        var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
-            .Where(x => x.GetCustomAttribute<AutoInjectAttribute>() != null &&
-                        x.GetInterface(typeof(T).Name) != null)
+        var types = TypeFetcher.Query().HasAttribute(typeof(AutoInjectAttribute)).Implements(typeof(T)).ToList()
             .Select(x => x.GetInterfaces().SingleOrDefault(y => y.Name != typeof(T).Name && serviceProvider.GetService(y) is T))
             .Where(x => x != null);
 
