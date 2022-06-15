@@ -91,7 +91,7 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection Configure<T>(IServiceCollection services, IConfiguration configuration, string name) where T : class => services.Configure<T>(x => configuration.GetSection(name).Bind(x));
 
-    public static IList<T> GetAutoInjectServices<T>(this IServiceProvider serviceProvider)
+    public static IReadOnlyList<T> GetAutoInjectServices<T>(this IServiceProvider serviceProvider)
     {
         var types = TypeFetcher.Query().HasAttribute(typeof(AutoInjectAttribute)).Implements(typeof(T)).ToList()
             .Select(x => x.GetInterfaces().SingleOrDefault(y => y.Name != typeof(T).Name && serviceProvider.GetService(y) is T))

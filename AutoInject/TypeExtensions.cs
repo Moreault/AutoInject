@@ -2,7 +2,7 @@
 
 public static class TypeExtensions
 {
-    public static IList<Type> GetDirectInterfaces(this Type type)
+    public static IReadOnlyList<Type> GetDirectInterfaces(this Type type)
     {
         if (type == null) throw new ArgumentNullException(nameof(type));
 
