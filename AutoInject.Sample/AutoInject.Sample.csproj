@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ToolBX.AssemblyInitializer.Console" Version="1.0.1" />
+    <PackageReference Include="ToolBX.AssemblyInitializer.Console" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
