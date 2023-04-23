@@ -11,7 +11,7 @@ public static class ServiceCollectionExtensions
             var interfaces = type.GetInterfaces();
             if (!interfaces.Any()) throw new InvalidOperationException(string.Format(Exceptions.CannotInjectServiceBecauseNoInterface, type.Name));
 
-            var attribute = (AutoInjectAttribute)Attribute.GetCustomAttribute(type, typeof(AutoInjectAttribute), true);
+            var attribute = (AutoInjectAttribute)Attribute.GetCustomAttribute(type, typeof(AutoInjectAttribute), true)!;
 
             Type implementation;
             if (attribute.Interface != null)
@@ -81,8 +81,8 @@ public static class ServiceCollectionExtensions
 
         foreach (var type in types)
         {
-            var attribute = (AutoConfigAttribute)Attribute.GetCustomAttribute(type, typeof(AutoConfigAttribute), true);
-            typeof(ServiceCollectionExtensions).GetMethod(nameof(Configure), BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(type)
+            var attribute = (AutoConfigAttribute)Attribute.GetCustomAttribute(type, typeof(AutoConfigAttribute), true)!;
+            typeof(ServiceCollectionExtensions).GetMethod(nameof(Configure), BindingFlags.Static | BindingFlags.NonPublic)!.MakeGenericMethod(type)
                 .Invoke(null, BindingFlags.Static | BindingFlags.NonPublic, null, new object[] { services, configuration, attribute.Name }, null);
         }
 
@@ -97,6 +97,6 @@ public static class ServiceCollectionExtensions
             .Select(x => x.GetInterfaces().SingleOrDefault(y => y.Name != typeof(T).Name && serviceProvider.GetService(y) is T))
             .Where(x => x != null);
 
-        return types.Select(x => (T)serviceProvider.GetService(x) ?? throw new AutoInjectServiceNotFoundException(x, typeof(T))).ToList();
+        return types.Select(x => (T)serviceProvider.GetService(x!)! ?? throw new AutoInjectServiceNotFoundException(x!, typeof(T))).ToList();
     }
 }
