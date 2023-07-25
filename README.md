@@ -84,7 +84,7 @@ public void ConfigureServices(IServiceCollection services)
 
 This will also add AutoInject support for every other loaded assembly so you only need to call it once and everything that uses the `[AutoInject]` attribute _everywhere_ will be injected.
 
-## Core of ToolBX
+## Core of the ToolBX micro framework
 `[AutoInject]` is used by every ToolBX library that requires DI and it may not have to be manually added to your project if you already use one such library. It ensures that all ToolBX types are always injected no matter what. I do encourage you to hop on the train and use it as well but it's ultimately your decision which the framework respects by not tying you down in any way.
 
 `AddAutoInjectServices` is never called by a ToolBX library so you always have to do that one step yourself. 
