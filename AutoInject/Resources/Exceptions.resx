@@ -124,7 +124,7 @@
     <value>Can't inject service automatically : ServiceLifetime '{0}' is not supported</value>
   </data>
   <data name="CannotInjectServiceBecauseNoInterface" xml:space="preserve">
-    <value>Can't inject service automatically : {0} is expected to implement at least one interface</value>
+	  <value>Can't inject service automatically : {0} is expected to implement at least one interface or abstract class</value>
   </data>
   <data name="CannotInjectServiceBecauseNoSimilarInterface" xml:space="preserve">
     <value>Can't inject service automatically : {0} implements {1} interfaces but none of them are close to similar in name</value>

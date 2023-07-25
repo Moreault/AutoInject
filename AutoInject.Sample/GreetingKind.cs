@@ -3,5 +3,7 @@
 public enum GreetingKind
 {
     Formal,
-    Familiar
+    Familiar,
+    Weird,
+    Abstract,
 }

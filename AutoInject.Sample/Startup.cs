@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace AutoInject.Sample;
+﻿namespace AutoInject.Sample;
 
 public class Startup : ConsoleStartup
 {
@@ -15,6 +13,8 @@ public class Startup : ConsoleStartup
         Console.WriteLine("What kind of greeting do you want?");
         Console.WriteLine("1. Formal");
         Console.WriteLine("2. Familiar");
+        Console.WriteLine("3. Weird");
+        Console.WriteLine("4. Abstract");
         while (true)
         {
             var key = Console.ReadKey(true);
@@ -27,6 +27,18 @@ public class Startup : ConsoleStartup
             if (key.Key == ConsoleKey.D2)
             {
                 Console.WriteLine(greeter.Greet(GreetingKind.Familiar));
+                break;
+            }
+
+            if (key.Key == ConsoleKey.D3)
+            {
+                Console.WriteLine(greeter.Greet(GreetingKind.Weird));
+                break;
+            }
+
+            if (key.Key == ConsoleKey.D4)
+            {
+                Console.WriteLine(greeter.Greet(GreetingKind.Abstract));
                 break;
             }
         }
