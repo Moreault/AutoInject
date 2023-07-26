@@ -21,6 +21,8 @@ public static class ServiceCollectionExtensions
                 implementation = attribute.GetType().GetGenericArguments().Single();
             else if (candidates.Length == 1)
                 implementation = candidates.Single()!;
+            else if (candidates.Count(x => x!.IsInterface) == 1)
+                implementation = candidates.Single(x => x!.IsInterface)!;
             else if (candidates.Any(x => x!.IsInterface && x.Name.Equals($"I{type.Name}", StringComparison.InvariantCultureIgnoreCase)))
                 implementation = candidates.Single(x => x!.Name.Equals($"I{type.Name}", StringComparison.InvariantCultureIgnoreCase))!;
             else

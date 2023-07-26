@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ToolBX.AssemblyInitializer.Console" Version="2.0.2" />
+    <PackageReference Include="ToolBX.AssemblyInitializer.Console" Version="2.2.0-beta1" />
   </ItemGroup>
 
   <ItemGroup>
