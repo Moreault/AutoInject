@@ -25,12 +25,12 @@ public void ConfigureServices(IServiceCollection services)
 
 public interface ISomeService { }
 
-[AutoInject(Lifetime = ServiceLifetime.Transient)]
+[AutoInject(ServiceLifetime.Transient)]
 public class SomeService : ISomeService { }
 
 public interface ISomeOtherService { }
 
-[AutoInject(Lifetime = ServiceLifetime.Scoped)]
+[AutoInject(ServiceLifetime.Scoped)]
 public class SomeOtherService : ISomeOtherService { }
 
 public interface IAnotherService { }
@@ -42,7 +42,7 @@ public class AnotherService : IAnotherService { }
 public interface IYetAnotherService { }
 
 //But knock yourself out if that's what you're into
-[AutoInject(Lifetime = ServiceLifetime.Singleton)]
+[AutoInject(ServiceLifetime.Singleton)]
 public class YetAnotherService : IYetAnotherService { }
 ```
 
@@ -61,16 +61,6 @@ public class ConcreteGreeter : AbstractGreeter, IWeirdGreeter
 }
 ```
 
-The generic `AutoInject<T>` should be used whenever there is ambiguity between two or more types. Here is how AutoInject will otherwise resolves your types for injection : 
-
-1. If the class has only one implementation or base class, that implementation or base class is used
-2. From here on, base types will be ignored and only interfaces will be considered
-3. If the class has multiple implementations, it will first look for `"IMyName"`
-4. If it does not implement an `"IMyName"` interface, it will look for an interface with a similar name (It's not very smart or reliable and I would avoid defaulting to this as much as possible!)
-5. Throws an exception since it can't possibly guess which interface or base type to use
-
-Using `AutoInject<T>` will bypass automatic resolution entirely. I don't necessarily recommend using `AutoInject<T>` for every use case but it's quite all right if you want to always be absolutely certain. I personally only use it as a last resort and default to regular `AutoInject`.
-
 ## Getting started
 
 Placing `[AutoInject]` attributes on every class in your project by itself will do very little (nothing) if you don't _configure_ it properly. You must add the following line to your startup code in order for AutoInject to work :
@@ -83,6 +73,30 @@ public void ConfigureServices(IServiceCollection services)
 ```
 
 This will also add AutoInject support for every other loaded assembly so you only need to call it once and everything that uses the `[AutoInject]` attribute _everywhere_ will be injected.
+
+## Overriding default lifetime
+By default, that is if you don't specify anything and just use `[AutoInject]`, your services will be injected as `Singleton`. As of version 2.2.0, there is a way to override this behavior by using `AutoInjectOptions` when adding AutoInject support in your startup code.
+
+```cs
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddAutoInjectServices(new AutoInjectOptions { DefaultLifetime = ServiceLifetime.Scoped });
+}
+```
+
+## Automatic type resolution vs explicit
+
+The generic `AutoInject<T>` should be used whenever there is ambiguity between two or more types. Here is how AutoInject will otherwise resolves your types for injection : 
+
+1. If the class has only one implementation or base class, that implementation or base class is used
+2. From here on, base types will be ignored and only interfaces will be considered
+3. If the class has multiple implementations, it will first look for `"IMyName"`
+4. If it does not implement an `"IMyName"` interface, it will look for an interface with a similar name (It's not very smart or reliable and I would avoid defaulting to this as much as possible!)
+5. Throws an exception since it can't possibly guess which interface or base type to use
+
+Using `AutoInject<T>` will bypass automatic resolution entirely. I don't necessarily recommend using `AutoInject<T>` for every use case but it's quite all right if you want to always be absolutely certain. I personally only use it as a last resort and default to regular `AutoInject`.
+
+All ToolBX types that used AutoInject's default behavior prior to 2.2.0 have been explicitly adjusted to `Singleton` so that they're not affected by this change.
 
 ## Core of the ToolBX micro framework
 `[AutoInject]` is used by every ToolBX library that requires DI and it may not have to be manually added to your project if you already use one such library. It ensures that all ToolBX types are always injected no matter what. I do encourage you to hop on the train and use it as well but it's ultimately your decision which the framework respects by not tying you down in any way.

@@ -2,8 +2,9 @@
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddAutoInjectServices(this IServiceCollection serviceCollection)
+    public static IServiceCollection AddAutoInjectServices(this IServiceCollection serviceCollection, AutoInjectOptions? options = null)
     {
+        options ??= new AutoInjectOptions();
         var types = Types.Where(x => x.HasAttribute<AutoInjectAttribute>() || x.HasAttribute(typeof(AutoInjectAttribute<>))).ToList();
 
         foreach (var type in types)
@@ -57,7 +58,8 @@ public static class ServiceCollectionExtensions
             if (implementation.IsGenericType && !implementation.IsGenericTypeDefinition)
                 implementation = implementation.GetGenericTypeDefinition();
 
-            switch (attribute.Lifetime)
+            var lifetime = attribute.Lifetime ?? options.DefaultLifetime;
+            switch (lifetime)
             {
                 case ServiceLifetime.Singleton:
                     serviceCollection.AddSingleton(implementation, type);
@@ -69,7 +71,7 @@ public static class ServiceCollectionExtensions
                     serviceCollection.AddTransient(implementation, type);
                     break;
                 default:
-                    throw new NotSupportedException(string.Format(Exceptions.CannotInjectServiceBecauseLifetimeNotSupported, attribute.Lifetime));
+                    throw new NotSupportedException(string.Format(Exceptions.CannotInjectServiceBecauseLifetimeNotSupported, lifetime));
             }
 
 

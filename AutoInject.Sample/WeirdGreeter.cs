@@ -6,7 +6,7 @@ public interface IWeirdGreeter
 }
 
 //We need to provide the interface's type to AutoInject since it has a wildly different name from its interface and implements multiple
-[AutoInject<IWeirdGreeter>]
+[AutoInject<IWeirdGreeter>()]
 public class Greta : IWeirdGreeter, IFormalGreeter
 {
     public string Greet() => "Siap!";
