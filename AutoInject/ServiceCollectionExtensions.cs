@@ -15,7 +15,9 @@ public static class ServiceCollectionExtensions
 
             Type implementation;
             if (attribute.Interface != null)
+            {
                 implementation = attribute.Interface;
+            }
             else if (interfaces.Length == 1)
                 implementation = interfaces.Single();
             else if (interfaces.Any(x => x.Name.Equals($"I{type.Name}", StringComparison.InvariantCultureIgnoreCase)))
@@ -52,7 +54,7 @@ public static class ServiceCollectionExtensions
                 implementation = searchResult.First().Interface;
             }
 
-            if (implementation.IsGenericType && !implementation.IsGenericTypeDefinition)
+            if (type.IsGenericType && !type.GenericTypeArguments.Any() && implementation.IsGenericType && !implementation.IsGenericTypeDefinition)
                 implementation = implementation.GetGenericTypeDefinition();
 
             switch (attribute.Lifetime)

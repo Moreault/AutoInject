@@ -3,5 +3,8 @@
 public enum GreetingKind
 {
     Formal,
-    Familiar
+    Familiar,
+    Complex,
+    Generic,
+    OpenGeneric
 }
