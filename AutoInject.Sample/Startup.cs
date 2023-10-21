@@ -13,8 +13,11 @@ public class Startup : ConsoleStartup
         Console.WriteLine("What kind of greeting do you want?");
         Console.WriteLine("1. Formal");
         Console.WriteLine("2. Familiar");
-        Console.WriteLine("3. Weird");
-        Console.WriteLine("4. Abstract");
+        Console.WriteLine("3. Complex");
+        Console.WriteLine("4. Generic");
+        Console.WriteLine("5. Open generic");
+        Console.WriteLine("6. Weird");
+        Console.WriteLine("7. Abstract");
         while (true)
         {
             var key = Console.ReadKey(true);
@@ -32,11 +35,29 @@ public class Startup : ConsoleStartup
 
             if (key.Key == ConsoleKey.D3)
             {
-                Console.WriteLine(greeter.Greet(GreetingKind.Weird));
+                Console.WriteLine(greeter.Greet(GreetingKind.Complex));
                 break;
             }
 
             if (key.Key == ConsoleKey.D4)
+            {
+                Console.WriteLine(greeter.Greet(GreetingKind.Generic));
+                break;
+            }
+
+            if (key.Key == ConsoleKey.D5)
+            {
+                Console.WriteLine(greeter.Greet(GreetingKind.OpenGeneric));
+                break;
+            }
+
+            if (key.Key == ConsoleKey.D6)
+            {
+                Console.WriteLine(greeter.Greet(GreetingKind.Weird));
+                break;
+            }
+
+            if (key.Key == ConsoleKey.D7)
             {
                 Console.WriteLine(greeter.Greet(GreetingKind.Abstract));
                 break;

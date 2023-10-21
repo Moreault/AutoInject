@@ -57,7 +57,7 @@ public static class ServiceCollectionExtensions
                 implementation = searchResult.First().Interface;
             }
 
-            if (implementation.IsGenericType && !implementation.IsGenericTypeDefinition)
+            if (type.IsGenericType && !type.GenericTypeArguments.Any() && implementation.IsGenericType && !implementation.IsGenericTypeDefinition)
                 implementation = implementation.GetGenericTypeDefinition();
 
             var lifetime = attribute.Lifetime ?? options.DefaultLifetime;

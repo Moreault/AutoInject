@@ -10,13 +10,19 @@ public class Greeter : IGreeter
 {
     private readonly IFamiliarGreeter _familiarGreeter;
     private readonly IFormalGreeter _formalGreeter;
+    private readonly IComplexGreeter<ComplexGreeter> _complexGreeter;
+    private readonly IGenericGreeter<string> _genericGreeter;
+    private readonly IOpenGenericGreeter<int> _openGenericGreeter;
     private readonly IWeirdGreeter _weirdGreeter;
     private readonly AbstractGreeter _abstractGreeter;
 
-    public Greeter(IFamiliarGreeter familiarGreeter, IFormalGreeter formalGreeter, IWeirdGreeter weirdGreeter, AbstractGreeter abstractGreeter)
+    public Greeter(IFamiliarGreeter familiarGreeter, IFormalGreeter formalGreeter, IOpenGenericGreeter<int> openGenericGreeter , IComplexGreeter<ComplexGreeter> complexGreeter, IGenericGreeter<string> genericGreeter, IWeirdGreeter weirdGreeter, AbstractGreeter abstractGreeter)
     {
         _familiarGreeter = familiarGreeter;
         _formalGreeter = formalGreeter;
+        _openGenericGreeter = openGenericGreeter;
+        _complexGreeter = complexGreeter;
+        _genericGreeter = genericGreeter;
         _weirdGreeter = weirdGreeter;
         _abstractGreeter = abstractGreeter;
     }
@@ -29,6 +35,12 @@ public class Greeter : IGreeter
                 return _formalGreeter.Greet();
             case GreetingKind.Familiar:
                 return _familiarGreeter.Greet();
+            case GreetingKind.Complex:
+                return _complexGreeter.Greet();
+            case GreetingKind.Generic:
+                return _genericGreeter.Greet();
+            case GreetingKind.OpenGeneric:
+                return _openGenericGreeter.Greet().ToString();
             case GreetingKind.Weird:
                 return _weirdGreeter.Greet();
             case GreetingKind.Abstract:
