@@ -2,11 +2,30 @@
 
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Add all services annotated with <see cref="AutoInjectAttribute"/> or <see cref="AutoInjectAttribute{T}"/> from the specified assembly.
+    /// </summary>
+    public static IServiceCollection AddAutoInjectServices(this IServiceCollection serviceCollection, Assembly assembly, AutoInjectOptions? options = null)
+    {
+        if (serviceCollection == null) throw new ArgumentNullException(nameof(serviceCollection));
+        if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+        var types = Types.From(assembly).Where(x => x.HasAttribute<AutoInjectAttribute>() || x.HasAttribute(typeof(AutoInjectAttribute<>)));
+        return serviceCollection.AddAutoInjectServices(types, options);
+    }
+
+    /// <summary>
+    /// Add all services annotated with <see cref="AutoInjectAttribute"/> or <see cref="AutoInjectAttribute{T}"/> from all assemblies.
+    /// </summary>
     public static IServiceCollection AddAutoInjectServices(this IServiceCollection serviceCollection, AutoInjectOptions? options = null)
     {
-        options ??= new AutoInjectOptions();
-        var types = Types.Where(x => x.HasAttribute<AutoInjectAttribute>() || x.HasAttribute(typeof(AutoInjectAttribute<>))).ToList();
+        if (serviceCollection == null) throw new ArgumentNullException(nameof(serviceCollection));
+        var types = Types.Where(x => x.HasAttribute<AutoInjectAttribute>() || x.HasAttribute(typeof(AutoInjectAttribute<>)));
+        return serviceCollection.AddAutoInjectServices(types, options);
+    }
 
+    private static IServiceCollection AddAutoInjectServices(this IServiceCollection serviceCollection, IEnumerable<Type> types, AutoInjectOptions? options = null)
+    {
+        options ??= new AutoInjectOptions();
         foreach (var type in types)
         {
             var candidates = type.GetInterfaces().Concat(new[] { type.BaseType }).Where(x => x != null).ToArray();
@@ -82,10 +101,28 @@ public static class ServiceCollectionExtensions
     }
 
     [Obsolete("Use the AutoConfig package from nuget.org instead. Will be removed in 3.0.0")]
+    public static IServiceCollection AddAutoConfig(this IServiceCollection services, Assembly assembly, IConfiguration configuration)
+    {
+        if (services is null) throw new ArgumentNullException(nameof(services));
+        if (assembly is null) throw new ArgumentNullException(nameof(assembly));
+        if (configuration is null) throw new ArgumentNullException(nameof(configuration));
+
+        var types = Types.From(assembly).Where(x => !x.IsInterface && !x.IsAbstract && !x.IsGenericTypeDefinition && !x.IsGenericType && x.HasAttribute<AutoConfigAttribute>());
+        return services.AddAutoConfig(configuration, types);
+    }
+
+    [Obsolete("Use the AutoConfig package from nuget.org instead. Will be removed in 3.0.0")]
     public static IServiceCollection AddAutoConfig(this IServiceCollection services, IConfiguration configuration)
     {
-        var types = Types.Where(x => !x.IsInterface && !x.IsAbstract && !x.IsGenericTypeDefinition && !x.IsGenericType && x.HasAttribute<AutoConfigAttribute>()).ToList();
+        if (services is null) throw new ArgumentNullException(nameof(services));
+        if (configuration is null) throw new ArgumentNullException(nameof(configuration));
 
+        var types = Types.Where(x => !x.IsInterface && !x.IsAbstract && !x.IsGenericTypeDefinition && !x.IsGenericType && x.HasAttribute<AutoConfigAttribute>());
+        return services.AddAutoConfig(configuration, types);
+    }
+
+    private static IServiceCollection AddAutoConfig(this IServiceCollection services, IConfiguration configuration, IEnumerable<Type> types)
+    {
         foreach (var type in types)
         {
             var attribute = (AutoConfigAttribute)Attribute.GetCustomAttribute(type, typeof(AutoConfigAttribute), true)!;
@@ -106,4 +143,6 @@ public static class ServiceCollectionExtensions
 
         return types.Select(x => (T)serviceProvider.GetService(x!)! ?? throw new AutoInjectServiceNotFoundException(x!, typeof(T))).ToList();
     }
+
+
 }
