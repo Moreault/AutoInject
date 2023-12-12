@@ -5,7 +5,7 @@ public interface IGenericGreeter<out T>
     T Greet();
 }
 
-[AutoInject]
+[AutoInject(Lifetime = ServiceLifetime.Scoped)]
 public class GenericGreeter : IGenericGreeter<string>
 {
     public string Greet() => "Hi!";

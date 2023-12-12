@@ -79,7 +79,7 @@ public static class ServiceCollectionExtensions
             if (type.IsGenericType && !type.GenericTypeArguments.Any() && implementation.IsGenericType && !implementation.IsGenericTypeDefinition)
                 implementation = implementation.GetGenericTypeDefinition();
 
-            var lifetime = attribute.Lifetime ?? options.DefaultLifetime;
+            var lifetime = attribute.RealLifetime ?? options.DefaultLifetime;
             switch (lifetime)
             {
                 case ServiceLifetime.Singleton:
@@ -94,8 +94,6 @@ public static class ServiceCollectionExtensions
                 default:
                     throw new NotSupportedException(string.Format(Exceptions.CannotInjectServiceBecauseLifetimeNotSupported, lifetime));
             }
-
-
         }
         return serviceCollection;
     }

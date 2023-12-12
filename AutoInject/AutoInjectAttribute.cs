@@ -19,7 +19,12 @@ public sealed class AutoInjectAttribute<T> : AutoInjectAttributeBase
 
 public abstract class AutoInjectAttributeBase : Attribute
 {
-    public ServiceLifetime? Lifetime { get; init; }
+    public ServiceLifetime Lifetime
+    {
+        get => RealLifetime ?? (ServiceLifetime)(-1);
+        init => RealLifetime = value;
+    }
+    internal ServiceLifetime? RealLifetime;
 
     internal AutoInjectAttributeBase() { }
 

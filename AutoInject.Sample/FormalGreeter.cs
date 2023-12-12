@@ -5,7 +5,7 @@ public interface IFormalGreeter
     string Greet();
 }
 
-[AutoInject]
+[AutoInject(ServiceLifetime.Scoped)]
 public class FormalGreeter : IFormalGreeter
 {
     public string Greet() => "Hello";
