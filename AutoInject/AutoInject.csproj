@@ -8,7 +8,7 @@
 		<RepositoryType>git</RepositoryType>
 		<Authors>Mathieu Moreault</Authors>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Version>2.2.0-beta5</Version>
+		<Version>2.2.0-beta6</Version>
 		<Description>A .NET library to make it easier to use DI by adding [AutoInject] attributes directly on classes.</Description>
 		<PackageId>ToolBX.$(AssemblyName)</PackageId>
 		<PackageIcon>autoinject.png</PackageIcon>
@@ -28,7 +28,7 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
-		<PackageReference Include="ToolBX.Reflection4Humans.TypeFetcher" Version="2.2.0-beta4" />
+		<PackageReference Include="ToolBX.Reflection4Humans.TypeFetcher" Version="2.2.0-beta6" />
 
 	</ItemGroup>
 
