@@ -13,14 +13,18 @@ public class Greeter : IGreeter
     private readonly IComplexGreeter<ComplexGreeter> _complexGreeter;
     private readonly IGenericGreeter<string> _genericGreeter;
     private readonly IOpenGenericGreeter<int> _openGenericGreeter;
+    private readonly IWeirdGreeter _weirdGreeter;
+    private readonly AbstractGreeter _abstractGreeter;
 
-    public Greeter(IFamiliarGreeter familiarGreeter, IFormalGreeter formalGreeter, IOpenGenericGreeter<int> openGenericGreeter , IComplexGreeter<ComplexGreeter> complexGreeter, IGenericGreeter<string> genericGreeter)
+    public Greeter(IFamiliarGreeter familiarGreeter, IFormalGreeter formalGreeter, IOpenGenericGreeter<int> openGenericGreeter , IComplexGreeter<ComplexGreeter> complexGreeter, IGenericGreeter<string> genericGreeter, IWeirdGreeter weirdGreeter, AbstractGreeter abstractGreeter)
     {
         _familiarGreeter = familiarGreeter;
         _formalGreeter = formalGreeter;
         _openGenericGreeter = openGenericGreeter;
         _complexGreeter = complexGreeter;
         _genericGreeter = genericGreeter;
+        _weirdGreeter = weirdGreeter;
+        _abstractGreeter = abstractGreeter;
     }
 
     public string Greet(GreetingKind kind)
@@ -37,6 +41,10 @@ public class Greeter : IGreeter
                 return _genericGreeter.Greet();
             case GreetingKind.OpenGeneric:
                 return _openGenericGreeter.Greet().ToString();
+            case GreetingKind.Weird:
+                return _weirdGreeter.Greet();
+            case GreetingKind.Abstract:
+                return _abstractGreeter.Greet();
             default:
                 return "What?! Stick to the script!";
         }

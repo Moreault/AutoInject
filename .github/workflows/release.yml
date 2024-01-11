@@ -1,12 +1,11 @@
-name: Publish to NuGet
+name: Release
 
 on:
-  push:
-    branches:
-      - master
-      
-env:
-  NuGetDirectory: ${{ github.workspace}}/nuget
+  release:
+    types: [published]
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+-*"
 
 jobs:
   build-and-publish:
@@ -28,10 +27,9 @@ jobs:
       
     - name: Test
       run: dotnet test --no-restore --verbosity normal
-      
+
     - name: Pack projects
-      run: dotnet pack --configuration Release --output ${{ env.NuGetDirectory }}
+      run: dotnet pack --no-build -c Release -o nupkg /p:PackageVersion=${{ github.event.release.tag_name }}
       
-    - name: Publish to NuGet.org
-      run: | 
-        nuget push ${{ env.NuGetDirectory }}/ToolBX.AutoInject.*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}} -SkipDuplicate
+    - name: Publish to NuGet
+      run: dotnet nuget push ./nupkg/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json

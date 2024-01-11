@@ -6,5 +6,7 @@ public enum GreetingKind
     Familiar,
     Complex,
     Generic,
-    OpenGeneric
+    OpenGeneric,
+    Weird,
+    Abstract,
 }

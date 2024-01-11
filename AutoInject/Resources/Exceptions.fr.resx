@@ -105,7 +105,7 @@
 		<value>Impossible d'injecter le service automatiquement : La valeur de ServiceLifetime '{0}' n'est pas supporté</value>
 	</data>
 	<data name="CannotInjectServiceBecauseNoInterface" xml:space="preserve">
-		<value>Impossible d'injecter le service automatiquement : {0} doit avoir au moins une interface</value>
+		<value>Impossible d'injecter le service automatiquement : {0} doit avoir au moins une interface ou une classe abstraite</value>
 	</data>
 	<data name="CannotInjectServiceBecauseNoSimilarInterface" xml:space="preserve">
 		<value>Impossible d'injecter le service automatiquement : {0} implémente {1} interfaces mais aucune d'elle n'a un nom similaire</value>
