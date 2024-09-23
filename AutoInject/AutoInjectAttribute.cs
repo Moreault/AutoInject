@@ -3,9 +3,6 @@
 [AttributeUsage(AttributeTargets.Class)]
 public sealed class AutoInjectAttribute : AutoInjectAttributeBase
 {
-    [Obsolete("Use AutoInject<T> instead. Will be removed in 3.0.0")]
-    public Type? Interface { get; init; }
-
     public AutoInjectAttribute() { }
     public AutoInjectAttribute(ServiceLifetime lifetime) : base(lifetime) { }
 }

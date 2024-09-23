@@ -34,9 +34,7 @@ public static class ServiceCollectionExtensions
             var attribute = (AutoInjectAttributeBase)Attribute.GetCustomAttribute(type, typeof(AutoInjectAttributeBase), true)!;
 
             Type implementation;
-            if (attribute is AutoInjectAttribute nonGeneric && nonGeneric.Interface != null)
-                implementation = nonGeneric.Interface;
-            else if (attribute.GetType().GetGenericArguments().Any())
+            if (attribute.GetType().GetGenericArguments().Any())
                 implementation = attribute.GetType().GetGenericArguments().Single();
             else if (candidates.Length == 1)
                 implementation = candidates.Single()!;
@@ -96,39 +94,6 @@ public static class ServiceCollectionExtensions
             }
         }
         return serviceCollection;
-    }
-
-    [Obsolete("Use the AutoConfig package from nuget.org instead. Will be removed in 3.0.0")]
-    public static IServiceCollection AddAutoConfig(this IServiceCollection services, Assembly assembly, IConfiguration configuration)
-    {
-        if (services is null) throw new ArgumentNullException(nameof(services));
-        if (assembly is null) throw new ArgumentNullException(nameof(assembly));
-        if (configuration is null) throw new ArgumentNullException(nameof(configuration));
-
-        var types = Types.From(assembly).Where(x => !x.IsInterface && !x.IsAbstract && !x.IsGenericTypeDefinition && !x.IsGenericType && x.HasAttribute<AutoConfigAttribute>());
-        return services.AddAutoConfig(configuration, types);
-    }
-
-    [Obsolete("Use the AutoConfig package from nuget.org instead. Will be removed in 3.0.0")]
-    public static IServiceCollection AddAutoConfig(this IServiceCollection services, IConfiguration configuration)
-    {
-        if (services is null) throw new ArgumentNullException(nameof(services));
-        if (configuration is null) throw new ArgumentNullException(nameof(configuration));
-
-        var types = Types.Where(x => !x.IsInterface && !x.IsAbstract && !x.IsGenericTypeDefinition && !x.IsGenericType && x.HasAttribute<AutoConfigAttribute>());
-        return services.AddAutoConfig(configuration, types);
-    }
-
-    private static IServiceCollection AddAutoConfig(this IServiceCollection services, IConfiguration configuration, IEnumerable<Type> types)
-    {
-        foreach (var type in types)
-        {
-            var attribute = (AutoConfigAttribute)Attribute.GetCustomAttribute(type, typeof(AutoConfigAttribute), true)!;
-            typeof(ServiceCollectionExtensions).GetMethod(nameof(Configure), BindingFlags.Static | BindingFlags.NonPublic)!.MakeGenericMethod(type)
-                .Invoke(null, BindingFlags.Static | BindingFlags.NonPublic, null, new object[] { services, configuration, attribute.Name }, null);
-        }
-
-        return services;
     }
 
     private static IServiceCollection Configure<T>(IServiceCollection services, IConfiguration configuration, string name) where T : class => services.Configure<T>(x => configuration.GetSection(name).Bind(x));
