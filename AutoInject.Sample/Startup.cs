@@ -47,17 +47,11 @@ public class Startup : ConsoleStartup
 
             if (key.Key == ConsoleKey.D5)
             {
-                Console.WriteLine(greeter.Greet(GreetingKind.OpenGeneric));
-                break;
-            }
-
-            if (key.Key == ConsoleKey.D6)
-            {
                 Console.WriteLine(greeter.Greet(GreetingKind.Weird));
                 break;
             }
 
-            if (key.Key == ConsoleKey.D7)
+            if (key.Key == ConsoleKey.D6)
             {
                 Console.WriteLine(greeter.Greet(GreetingKind.Abstract));
                 break;
