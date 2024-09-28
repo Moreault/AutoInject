@@ -113,8 +113,7 @@ public static class ServiceCollectionExtensions
         if (serviceProvider is null) throw new ArgumentNullException(nameof(serviceProvider));
         var types = Types.Where(x => x.HasAttribute<AutoInjectAttributeBase>() && x.Implements<T>())
             .Select(GetImplementation)
-            .Where(x => x != null!)
-            .ToList();
+            .Where(x => x != null!);
 
         return types.SelectMany(x => serviceProvider.GetServices(x).OfType<T>()! ?? throw new AutoInjectServiceNotFoundException(x, typeof(T))).Distinct().ToList();
     }
