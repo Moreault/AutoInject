@@ -8,7 +8,7 @@
 		<RepositoryType>git</RepositoryType>
 		<Authors>Mathieu Moreault</Authors>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Version>3.0.0</Version>
+		<Version>3.0.1-beta1</Version>
 		<Description>A .NET library to make it easier to use DI by adding [AutoInject] attributes directly on classes.</Description>
 		<PackageId>ToolBX.$(AssemblyName)</PackageId>
 		<PackageIcon>autoinject.png</PackageIcon>
