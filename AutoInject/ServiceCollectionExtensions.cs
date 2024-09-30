@@ -1,4 +1,6 @@
-﻿namespace ToolBX.AutoInject;
+﻿using System;
+
+namespace ToolBX.AutoInject;
 
 public static class ServiceCollectionExtensions
 {
@@ -28,54 +30,8 @@ public static class ServiceCollectionExtensions
         options ??= new AutoInjectOptions();
         foreach (var type in types)
         {
-            var candidates = type.GetInterfaces().Concat(new[] { type.BaseType }).Where(x => x != null).ToArray();
-            if (!candidates.Any()) throw new InvalidOperationException(string.Format(Exceptions.CannotInjectServiceBecauseNoInterface, type.Name));
-
+            var implementation = GetImplementation(type);
             var attribute = (AutoInjectAttributeBase)Attribute.GetCustomAttribute(type, typeof(AutoInjectAttributeBase), true)!;
-
-            Type implementation;
-            if (attribute.GetType().GetGenericArguments().Any())
-                implementation = attribute.GetType().GetGenericArguments().Single();
-            else if (candidates.Length == 1)
-                implementation = candidates.Single()!;
-            else if (candidates.Count(x => x!.IsInterface) == 1)
-                implementation = candidates.Single(x => x!.IsInterface)!;
-            else if (candidates.Any(x => x!.IsInterface && x.Name.Equals($"I{type.Name}", StringComparison.InvariantCultureIgnoreCase)))
-                implementation = candidates.Single(x => x!.Name.Equals($"I{type.Name}", StringComparison.InvariantCultureIgnoreCase))!;
-            else
-            {
-                var regex = new Regex(@"(?<=[A-Z])(?=[A-Z][a-z]) | (?<=[^A-Z])(?=[A-Z]) | (?<=[A-Za-z])(?=[^A-Za-z])", RegexOptions.IgnorePatternWhitespace);
-
-                var splittedTypeName = regex.Replace(type.Name, " ").Split(' ');
-                var searchResult = new List<InterfaceSearchResult>();
-
-                var directInterfaces = type.GetDirectInterfaces();
-
-                foreach (var i in candidates.Where(x => x!.IsInterface))
-                {
-                    var splittedInterfaceName = regex.Replace(i.Name, " ").Split(' ');
-                    var similarities = splittedInterfaceName.Sum(x => splittedTypeName.Count(y => x.Contains(y, StringComparison.InvariantCultureIgnoreCase)));
-
-                    if (similarities > 0)
-                        searchResult.Add(new InterfaceSearchResult
-                        {
-                            Interface = i,
-                            Similarities = similarities,
-                            IsInherited = !directInterfaces.Contains(i)
-                        });
-                }
-
-                if (!searchResult.Any()) throw new Exception(string.Format(Exceptions.CannotInjectServiceBecauseNoSimilarInterface, type.Name, candidates.Length));
-
-                searchResult = searchResult.OrderBy(x => x.IsInherited).ThenByDescending(x => x.Similarities).ToList();
-                if (searchResult.Count > 1 && searchResult[0].Similarities == searchResult[1].Similarities && searchResult[0].IsInherited == searchResult[1].IsInherited)
-                    throw new Exception(string.Format(Exceptions.CannotInjectServiceBecauseOfAmbiguousNames, searchResult[0].Interface.Name, searchResult[1].Interface.Name, type.Name));
-
-                implementation = searchResult.First().Interface;
-            }
-
-            if (type.IsGenericType && !type.GenericTypeArguments.Any() && implementation.IsGenericType && !implementation.IsGenericTypeDefinition)
-                implementation = implementation.GetGenericTypeDefinition();
 
             var lifetime = attribute.RealLifetime ?? options.DefaultLifetime;
             switch (lifetime)
@@ -96,16 +52,69 @@ public static class ServiceCollectionExtensions
         return serviceCollection;
     }
 
+    private static Type GetImplementation(Type type)
+    {
+        var candidates = type.GetInterfaces().Concat([type.BaseType]).Where(x => x != null).ToArray();
+        if (!candidates.Any()) throw new InvalidOperationException(string.Format(Exceptions.CannotInjectServiceBecauseNoInterface, type.Name));
+
+        var attribute = (AutoInjectAttributeBase)Attribute.GetCustomAttribute(type, typeof(AutoInjectAttributeBase), true)!;
+
+        Type implementation;
+        if (attribute.GetType().GetGenericArguments().Any())
+            implementation = attribute.GetType().GetGenericArguments().Single();
+        else if (candidates.Length == 1)
+            implementation = candidates.Single()!;
+        else if (candidates.Count(x => x!.IsInterface) == 1)
+            implementation = candidates.Single(x => x!.IsInterface)!;
+        else if (candidates.Any(x => x!.IsInterface && x.Name.Equals($"I{type.Name}", StringComparison.InvariantCultureIgnoreCase)))
+            implementation = candidates.Single(x => x!.Name.Equals($"I{type.Name}", StringComparison.InvariantCultureIgnoreCase))!;
+        else
+        {
+            var regex = new Regex(@"(?<=[A-Z])(?=[A-Z][a-z]) | (?<=[^A-Z])(?=[A-Z]) | (?<=[A-Za-z])(?=[^A-Za-z])", RegexOptions.IgnorePatternWhitespace);
+
+            var splittedTypeName = regex.Replace(type.Name, " ").Split(' ');
+            var searchResult = new List<InterfaceSearchResult>();
+
+            var directInterfaces = type.GetDirectInterfaces();
+
+            foreach (var i in candidates.Where(x => x!.IsInterface))
+            {
+                var splittedInterfaceName = regex.Replace(i.Name, " ").Split(' ');
+                var similarities = splittedInterfaceName.Sum(x => splittedTypeName.Count(y => x.Contains(y, StringComparison.InvariantCultureIgnoreCase)));
+
+                if (similarities > 0)
+                    searchResult.Add(new InterfaceSearchResult
+                    {
+                        Interface = i,
+                        Similarities = similarities,
+                        IsInherited = !directInterfaces.Contains(i)
+                    });
+            }
+
+            if (!searchResult.Any()) throw new Exception(string.Format(Exceptions.CannotInjectServiceBecauseNoSimilarInterface, type.Name, candidates.Length));
+
+            searchResult = searchResult.OrderBy(x => x.IsInherited).ThenByDescending(x => x.Similarities).ToList();
+            if (searchResult.Count > 1 && searchResult[0].Similarities == searchResult[1].Similarities && searchResult[0].IsInherited == searchResult[1].IsInherited)
+                throw new Exception(string.Format(Exceptions.CannotInjectServiceBecauseOfAmbiguousNames, searchResult[0].Interface.Name, searchResult[1].Interface.Name, type.Name));
+
+            implementation = searchResult.First().Interface;
+        }
+
+        if (type.IsGenericType && !type.GenericTypeArguments.Any() && implementation.IsGenericType && !implementation.IsGenericTypeDefinition)
+            implementation = implementation.GetGenericTypeDefinition();
+
+        return implementation;
+    }
+
     private static IServiceCollection Configure<T>(IServiceCollection services, IConfiguration configuration, string name) where T : class => services.Configure<T>(x => configuration.GetSection(name).Bind(x));
 
     public static IReadOnlyList<T> GetAutoInjectServices<T>(this IServiceProvider serviceProvider)
     {
-        var types = Types.Where(x => x.HasAttribute<AutoInjectAttribute>() && x.Implements<T>())
-            .Select(x => x.GetInterfaces().SingleOrDefault(y => y.Name != typeof(T).Name && serviceProvider.GetService(y) is T))
-            .Where(x => x != null);
+        if (serviceProvider is null) throw new ArgumentNullException(nameof(serviceProvider));
+        var types = Types.Where(x => x.HasAttribute<AutoInjectAttributeBase>() && x.Implements<T>())
+            .Select(GetImplementation)
+            .Where(x => x != null!);
 
-        return types.Select(x => (T)serviceProvider.GetService(x!)! ?? throw new AutoInjectServiceNotFoundException(x!, typeof(T))).ToList();
+        return types.SelectMany(x => serviceProvider.GetServices(x).OfType<T>()! ?? throw new AutoInjectServiceNotFoundException(x, typeof(T))).Distinct().ToList();
     }
-
-
 }
