@@ -2,4 +2,3 @@
 
 global using FluentAssertions;
 global using ToolBX.AutoInject;
-global using WhiteJackalStudio.TestTools;
