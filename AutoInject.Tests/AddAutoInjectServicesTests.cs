@@ -1,5 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-
 namespace AutoInject.Tests;
 
 public interface IService1;
