@@ -263,7 +263,7 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
                     true),
                 location,
                 classSymbol.Name,
-                candidates.Count));
+                interfaces.Count));
             return null;
         }
 

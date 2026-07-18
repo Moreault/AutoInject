@@ -1,4 +1,10 @@
+using System.Collections.Concurrent;
+
 namespace AutoInject.Tests;
+
+public interface IConcurrencyMarker;
+
+public class ConcurrencyMarker : IConcurrencyMarker;
 
 public interface IService1;
 
@@ -188,5 +194,63 @@ public class AddAutoInjectServicesTests
         registeredTypes.Should().Contain(typeof(ServiceA));
         registeredTypes.Should().Contain(typeof(ScopedService));
         registeredTypes.Should().Contain(typeof(TransientService));
+    }
+
+    [TestMethod]
+    public void WhenRegisteringConcurrentlyWhileReading_LosesNoRegistrationsAndNeverThrows()
+    {
+        // Arrange
+        // Register is called from generated [ModuleInitializer] code, which the runtime can run
+        // concurrently on multiple threads. This reproduces that: writers hammer Register while
+        // readers enumerate the registry via the public no-arg overload (which reads through All()).
+        const int writerCount = 1000;
+        const int readerCount = 200;
+        var assembly = typeof(AddAutoInjectServicesTests).Assembly;
+        var exceptions = new ConcurrentQueue<Exception>();
+
+        // A gate so every task starts at the same instant, maximizing contention.
+        using var gate = new ManualResetEventSlim(false);
+
+        var writers = Enumerable.Range(0, writerCount).Select(_ => Task.Run(() =>
+        {
+            gate.Wait();
+            try
+            {
+                AutoInjectRegistry.Register(assembly, (services, _) =>
+                    services.AddSingleton<IConcurrencyMarker, ConcurrencyMarker>());
+            }
+            catch (Exception e)
+            {
+                exceptions.Enqueue(e);
+            }
+        }));
+
+        var readers = Enumerable.Range(0, readerCount).Select(_ => Task.Run(() =>
+        {
+            gate.Wait();
+            try
+            {
+                new ServiceCollection().AddAutoInjectServices();
+            }
+            catch (Exception e)
+            {
+                exceptions.Enqueue(e);
+            }
+        }));
+
+        var all = writers.Concat(readers).ToArray();
+
+        // Act
+        gate.Set();
+        Task.WaitAll(all);
+
+        // Assert
+        exceptions.Should().BeEmpty();
+
+        // Every writer's callback must have survived: running All() once should invoke each of the
+        // registered marker callbacks exactly once, so we see exactly writerCount marker descriptors.
+        var finalServices = new ServiceCollection();
+        finalServices.AddAutoInjectServices();
+        finalServices.Count(d => d.ServiceType == typeof(IConcurrencyMarker)).Should().Be(writerCount);
     }
 }

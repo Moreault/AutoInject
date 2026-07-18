@@ -10,6 +10,8 @@ public static class AutoInjectRegistry
 {
     private static readonly List<Registration> Registrations = new();
 
+    private static readonly object Lock = new();
+
     /// <summary>
     /// Called by generated code to register an assembly's <c>[AutoInject]</c> services. Not intended to be
     /// called directly.
@@ -18,20 +20,26 @@ public static class AutoInjectRegistry
     {
         ArgumentNullException.ThrowIfNull(assembly);
         ArgumentNullException.ThrowIfNull(register);
-        Registrations.Add(new Registration(assembly, register));
+        lock (Lock)
+            Registrations.Add(new Registration(assembly, register));
     }
 
-    internal static IEnumerable<Action<IServiceCollection, ServiceLifetime>> For(Assembly assembly)
+    internal static IReadOnlyList<Action<IServiceCollection, ServiceLifetime>> For(Assembly assembly)
     {
-        foreach (var registration in Registrations)
-            if (Equals(registration.Assembly, assembly))
-                yield return registration.Register;
+        lock (Lock)
+        {
+            var result = new List<Action<IServiceCollection, ServiceLifetime>>();
+            foreach (var registration in Registrations)
+                if (Equals(registration.Assembly, assembly))
+                    result.Add(registration.Register);
+            return result;
+        }
     }
 
-    internal static IEnumerable<Action<IServiceCollection, ServiceLifetime>> All()
+    internal static IReadOnlyList<Action<IServiceCollection, ServiceLifetime>> All()
     {
-        foreach (var registration in Registrations)
-            yield return registration.Register;
+        lock (Lock)
+            return Registrations.ConvertAll(x => x.Register);
     }
 
     private sealed record Registration(Assembly Assembly, Action<IServiceCollection, ServiceLifetime> Register);
