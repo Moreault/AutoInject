@@ -159,6 +159,12 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
         sb.AppendLine("{");
         sb.AppendLine("    internal static class AutoInjectRegistrar");
         sb.AppendLine("    {");
+        sb.AppendLine("        [System.Runtime.CompilerServices.ModuleInitializer]");
+        sb.AppendLine("        internal static void Initialize()");
+        sb.AppendLine("        {");
+        sb.AppendLine("            global::ToolBX.AutoInject.AutoInjectRegistry.Register(typeof(AutoInjectRegistrar).Assembly, Register);");
+        sb.AppendLine("        }");
+        sb.AppendLine();
         sb.AppendLine("        public static void Register(");
         sb.AppendLine("            Microsoft.Extensions.DependencyInjection.IServiceCollection services,");
         sb.AppendLine("            Microsoft.Extensions.DependencyInjection.ServiceLifetime defaultLifetime)");

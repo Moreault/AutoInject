@@ -9,12 +9,10 @@ public static class ServiceCollectionExtensions
 
         options ??= new AutoInjectOptions();
 
-        var registrarType = assembly.GetType("ToolBX.AutoInject.Generated.AutoInjectRegistrar");
-        if (registrarType != null)
-        {
-            var method = registrarType.GetMethod("Register", BindingFlags.Public | BindingFlags.Static);
-            method?.Invoke(null, [services, options.DefaultLifetime]);
-        }
+        // The generated AutoInjectRegistrar self-registers into AutoInjectRegistry from a module
+        // initializer, so we can look its services up without reflection (trimming/AOT safe).
+        foreach (var register in AutoInjectRegistry.For(assembly))
+            register(services, options.DefaultLifetime);
 
         return services;
     }
@@ -25,11 +23,8 @@ public static class ServiceCollectionExtensions
 
         options ??= new AutoInjectOptions();
 
-        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-        {
-            if (assembly.GetCustomAttribute<HasAutoInjectServicesAttribute>() != null)
-                services.AddAutoInjectServices(assembly, options);
-        }
+        foreach (var register in AutoInjectRegistry.All())
+            register(services, options.DefaultLifetime);
 
         return services;
     }

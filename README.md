@@ -66,13 +66,15 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddAutoInjectServices();
 ```
 
-This will also add AutoInject support for every other loaded assembly so you only need to call it once and everything that uses the `[AutoInject]` attribute _everywhere_ will be injected.
+This registers the `[AutoInject]` services of every assembly that is **already loaded** into the process. Each assembly containing `[AutoInject]` types self-registers from a module initializer, which only runs once the runtime has loaded that assembly. .NET loads referenced assemblies lazily (on first use of one of their types), so an assembly you reference purely for its services — without touching any of its types before this call — may not be loaded yet and therefore won't be registered.
 
-You can also register services from a specific assembly :
+To register a specific assembly deterministically, pass it explicitly (this also forces the assembly to load):
 
 ```cs
 builder.Services.AddAutoInjectServices(typeof(SomeType).Assembly);
 ```
+
+This is why ToolBX libraries expose a small `AddMyLibrary()` extension that calls `AddAutoInjectServices(Assembly.GetExecutingAssembly())` internally: calling it runs code inside that library's assembly, guaranteeing it is loaded and its services registered. Prefer those per-library calls (or the explicit `Assembly` overload) over relying on the parameterless call to pick everything up.
 
 ## How it works
 
@@ -123,6 +125,6 @@ Using `AutoInject<T>` will bypass automatic resolution entirely. I don't necessa
 - **`Microsoft.Extensions.Configuration.Json`, `Microsoft.Extensions.Configuration.Binder`, and `Microsoft.Extensions.Options` package dependencies have been removed.**
 
 ## Core of the ToolBX micro framework
-`[AutoInject]` is used by every ToolBX library that requires DI and it may not have to be manually added to your project if you already use one such library. It ensures that all ToolBX types are always injected no matter what. I do encourage you to hop on the train and use it as well but it's ultimately your decision which the framework respects by not tying you down in any way.
+`[AutoInject]` is used by every ToolBX library that requires DI and it may not have to be manually added to your project if you already use one such library. Each of those libraries registers its own services through its `AddMyLibrary()` extension, so their types are injected as soon as you call it. I do encourage you to hop on the train and use it as well but it's ultimately your decision which the framework respects by not tying you down in any way.
 
 `AddAutoInjectServices` is never called by a ToolBX library so you always have to do that one step yourself.
